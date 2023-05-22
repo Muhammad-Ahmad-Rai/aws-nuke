@@ -23,7 +23,7 @@ func ListSNSSubscriptions(sess *session.Session) ([]Resource, error) {
 			return nil, err
 		}
 		for _, subscription := range resp.Subscriptions {
-			if *subscription.SubscriptionArn != "PendingConfirmation" {
+			if *subscription.SubscriptionArn != "PendingConfirmation" && *subscription.SubscriptionArn != "Deleted" {
 				resources = append(resources, &SNSSubscription{
 					svc:  svc,
 					id:   subscription.SubscriptionArn,
