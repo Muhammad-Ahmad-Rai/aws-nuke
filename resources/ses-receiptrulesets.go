@@ -2,9 +2,12 @@ package resources
 
 import (
 	"fmt"
-
+	"time"
+	
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	log "github.com/sirupsen/logrus"
 )
 
 type SESReceiptRuleSet struct {
@@ -24,7 +27,17 @@ func ListSESReceiptRuleSets(sess *session.Session) ([]Resource, error) {
 	params := &ses.ListReceiptRuleSetsInput{}
 
 	output, err := svc.ListReceiptRuleSets(params)
+	time.Sleep(1 * time.Second)
+
 	if err != nil {
+		awsErr, ok := err.(awserr.Error)
+		if ok && awsErr.Code() == "InvalidAction" {
+			log.Debugf("skipping list operation for SESReceiptRuleSet: %s", awsErr.Message())
+			// AWS responds with InvalidAction on regions that do not
+			// support ListSESReceiptRuleSets.
+			return resources,nil
+		}
+
 		return nil, err
 	}
 

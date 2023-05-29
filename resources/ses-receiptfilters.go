@@ -3,6 +3,10 @@ package resources
 import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	log "github.com/sirupsen/logrus"
 )
 
 type SESReceiptFilter struct {
@@ -21,7 +25,17 @@ func ListSESReceiptFilters(sess *session.Session) ([]Resource, error) {
 	params := &ses.ListReceiptFiltersInput{}
 
 	output, err := svc.ListReceiptFilters(params)
+	time.Sleep(1 * time.Second)
+	
 	if err != nil {
+		awsErr, ok := err.(awserr.Error)
+		if ok && awsErr.Code() == "InvalidAction" {
+			log.Debugf("skipping list operation for SESReceiptFilter: %s", awsErr.Message())
+			// AWS responds with InvalidAction on regions that do not
+			// support ListSESReceiptFilters.
+			return resources,nil
+		}
+
 		return nil, err
 	}
 
