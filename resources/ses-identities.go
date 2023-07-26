@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"time"
 )
 
 type SESIdentity struct {
@@ -25,6 +26,8 @@ func ListSESIdentities(sess *session.Session) ([]Resource, error) {
 
 	for {
 		output, err := svc.ListIdentities(params)
+		time.Sleep(1 * time.Second)
+
 		if err != nil {
 			return nil, err
 		}
